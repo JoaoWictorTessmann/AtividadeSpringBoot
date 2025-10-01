@@ -14,6 +14,7 @@ import java.util.Map;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api")
@@ -35,10 +36,10 @@ public class ConsultorController {
                 <h1>Consultor APIS - Spring Boot</h1>
                 <h2>Endpoints Disponiveis: </h2>
                 <ul>
-                    <li><a href=""></a> - Buscar CEP</li>
-                    <li><a href=""></a> - Fatos Gatos</li>
-                    <li><a href=""></a> - Piada</li>
-                    <li><a href=""></a> - Alguma Opcao...</li>
+                    <li><a href="/api/cep/01001000">/api/cep{cep}</a> - Buscar CEP</li>
+                    <li><a href="/api/fato">/api/fato</a> - Fatos Gatos</li>
+                    <li><a href="/api/conselho">/api/conselho</a> - Conselhos Aleatórios</li>
+                    <li><a href="/api/frontend">/api/frontend</a> - Página de Testes</li>
                 </ul>
                 """;
     }
@@ -65,11 +66,24 @@ public class ConsultorController {
     }
 
     @GetMapping("/cep/{cep}")
-    public String consultarCep(@PathVariable String sCep) {
+    public String consultarCep(@PathVariable String cep) {
         try {
-            String sUrl = "https://viacep.com.br/ws/" + sCep + "/json/";
-            String sJsonResposta = fazerRequisicao(sUrl);
-            return "";
+            String url = "https://viacep.com.br/ws/" + cep + "/json/";
+            String sJsonResposta = fazerRequisicao(url);
+
+            String logradouro = extrairValorJSON(sJsonResposta, "logradouro");
+            String bairro = extrairValorJSON(sJsonResposta, "bairro");
+            String localidade = extrairValorJSON(sJsonResposta, "localidade");
+            String uf = extrairValorJSON(sJsonResposta, "uf");
+
+            return String.format("""
+                    Consulta de CEP -
+                    Logradouro: %s
+                    Bairro: %s
+                    Localidade: %s
+                    UF: %s
+                    """, logradouro, bairro, localidade, uf);
+
         } catch (Exception e) {
             return "Aconteceu algum erro: " + e.getMessage();
         }
@@ -102,4 +116,46 @@ public class ConsultorController {
             return "Não encontrado!";
         }
     }
+
+    @GetMapping("/fato")
+    public String consultarFatosGatos() {
+        try {
+            String url = "https://catfact.ninja/fact";
+            String sJsonResposta = fazerRequisicao(url);
+
+            String fato = extrairValorJSON(sJsonResposta, "fact");
+
+            return String.format("""
+                    Consulta Fatos de Gatos -
+                    Fato: %s
+                    """, fato);
+
+        } catch (Exception e) {
+            return "Aconteceu algum erro: " + e.getMessage();
+        }
+    }
+
+    @GetMapping("/conselho")
+    public String consultarConselhoAleatorio() {
+        try {
+            String url = "https://api.adviceslip.com/advice";
+            String sJsonResposta = fazerRequisicao(url);
+
+            String advice = extrairValorJSON(sJsonResposta, "advice");
+
+            return String.format("""
+                Consulta Conselho Aleatório -
+                Conselho: %s
+                        """,advice);
+
+        } catch (Exception e) {
+            return "Aconteceu algum erro: " + e.getMessage();
+        }
+    }
+    @GetMapping("/frontend")
+    public String frontend() {
+        return "index";
+    }
+    
+
 }

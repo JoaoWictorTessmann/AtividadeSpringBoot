@@ -14,7 +14,6 @@ import java.util.Map;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api")
@@ -28,20 +27,6 @@ public class ConsultorController {
         contadores.put("cep", 0);
         contadores.put("fato-gato", 0);
         contadores.put("piada", 0);
-    }
-
-    @GetMapping("/")
-    public String home() {
-        return """
-                <h1>Consultor APIS - Spring Boot</h1>
-                <h2>Endpoints Disponiveis: </h2>
-                <ul>
-                    <li><a href="/api/cep/01001000">/api/cep{cep}</a> - Buscar CEP</li>
-                    <li><a href="/api/fato">/api/fato</a> - Fatos Gatos</li>
-                    <li><a href="/api/conselho">/api/conselho</a> - Conselhos Aleatórios</li>
-                    <li><a href="/api/frontend">/api/frontend</a> - Página de Testes</li>
-                </ul>
-                """;
     }
 
     // Método responsavel reutilizado do ConsultorApi original
@@ -118,20 +103,19 @@ public class ConsultorController {
     }
 
     @GetMapping("/fato")
-    public String consultarFatosGatos() {
+    public Map<String, String> consultarFatosGatos() {
         try {
             String url = "https://catfact.ninja/fact";
             String sJsonResposta = fazerRequisicao(url);
 
             String fato = extrairValorJSON(sJsonResposta, "fact");
 
-            return String.format("""
-                    Consulta Fatos de Gatos -
-                    Fato: %s
-                    """, fato);
+            Map<String, String> resposta = new HashMap<>();
+            resposta.put("fato", fato);
+            return resposta;
 
         } catch (Exception e) {
-            return "Aconteceu algum erro: " + e.getMessage();
+            return Map.of("erro", e.getMessage());
         }
     }
 
